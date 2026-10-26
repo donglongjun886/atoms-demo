@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { InviteDialog } from '@/components/InviteDialog'
 import { AppViewer } from '@/components/workspace/AppViewer'
 import { ChatPanel } from '@/components/workspace/ChatPanel'
 import { CollaboratorBar } from '@/components/workspace/CollaboratorBar'
@@ -29,7 +30,10 @@ export function WorkspacePage() {
           <h1 className="truncate text-base font-semibold">{project.name}</h1>
         </div>
         <StageBar stage={project.stage} />
-        <CollaboratorBar memberIds={project.memberIds} />
+        <div className="flex items-center gap-3">
+          <CollaboratorBar memberIds={project.memberIds} />
+          <InviteDialog projectId={project.id} />
+        </div>
       </header>
       <div className="flex min-h-0 flex-1">
         <aside className="flex w-[440px] shrink-0 flex-col border-r">

@@ -7,6 +7,7 @@ import type { Project } from '@/store/types'
 interface ProjectsState {
   projects: Project[]
   createProject: (input: { name: string; description?: string; ownerId: string }) => Project
+  addMember: (projectId: string, userId: string) => void
 }
 
 export const useProjectsStore = create<ProjectsState>()(
@@ -26,6 +27,12 @@ export const useProjectsStore = create<ProjectsState>()(
         set((state) => ({ projects: [...state.projects, project] }))
         return project
       },
+      addMember: (projectId, userId) =>
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === projectId && !p.memberIds.includes(userId) ? { ...p, memberIds: [...p.memberIds, userId] } : p,
+          ),
+        })),
     }),
     {
       name: 'atoms-demo:projects',
