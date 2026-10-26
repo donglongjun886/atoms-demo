@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-import { INITIAL_STAGE } from '@/engine/workflow'
+import { INITIAL_STAGE, type WorkflowStage } from '@/engine/workflow'
 import type { Project } from '@/store/types'
 
 interface ProjectsState {
   projects: Project[]
   createProject: (input: { name: string; description?: string; ownerId: string }) => Project
+  setStage: (projectId: string, stage: WorkflowStage) => void
 }
 
 export const useProjectsStore = create<ProjectsState>()(
@@ -26,6 +27,10 @@ export const useProjectsStore = create<ProjectsState>()(
         set((state) => ({ projects: [...state.projects, project] }))
         return project
       },
+      setStage: (projectId, stage) =>
+        set((state) => ({
+          projects: state.projects.map((p) => (p.id === projectId ? { ...p, stage } : p)),
+        })),
     }),
     {
       name: 'atoms-demo:projects',
