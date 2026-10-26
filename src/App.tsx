@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 
+import { canAccessProject } from '@/engine/invitations'
 import { LoginPage } from '@/pages/LoginPage'
 import { ProjectsPage } from '@/pages/ProjectsPage'
 import { WorkspacePage } from '@/pages/WorkspacePage'
@@ -23,7 +24,7 @@ function WorkspaceGuard() {
   const currentUserId = useUsersStore((s) => s.currentUserId)
   const project = useProjectsStore((s) => s.projects.find((p) => p.id === projectId))
 
-  if (!project || !currentUserId || !project.memberIds.includes(currentUserId)) {
+  if (!project || !currentUserId || !canAccessProject(project, currentUserId)) {
     return <Navigate to="/" replace />
   }
   return <WorkspacePage />

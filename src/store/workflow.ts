@@ -108,11 +108,11 @@ export const useWorkflowStore = create<WorkflowState>()(
         }))
       }
 
-      /** 文本指令批准/拒绝时，定位该项目最新一张待处理的计划卡 */
-      const latestPendingPlanCardId = (projectId: string): string | undefined => {
+      /** 文本指令批准/拒绝/开始构建时，定位该项目最新一张待处理的对应卡片 */
+      const latestPendingCardId = (projectId: string, cardType: 'plan' | 'action'): string | undefined => {
         const cards = useMessagesStore
           .getState()
-          .messages.filter((m) => m.projectId === projectId && m.card?.type === 'plan')
+          .messages.filter((m) => m.projectId === projectId && m.card?.type === cardType)
         return [...cards].reverse().find((m) => (get().cardStates[m.id] ?? 'pending') === 'pending')?.id
       }
 
@@ -130,9 +130,14 @@ export const useWorkflowStore = create<WorkflowState>()(
       const runCommand = (projectId: string, command: WorkflowCommandName, cardId?: string) => {
         const machine = machineOf(projectId)
         if (!machine) return
-        // 文本入口不带 cardId 时，作用于最新一张待处理计划卡
+        // 文本入口不带 cardId 时，作用于最新一张待处理的对应卡片
         const effectiveCardId =
-          cardId ?? (command === 'approve-plan' || command === 'decline-plan' ? latestPendingPlanCardId(projectId) : undefined)
+          cardId ??
+          (command === 'approve-plan' || command === 'decline-plan'
+            ? latestPendingCardId(projectId, 'plan')
+            : command === 'start-build'
+              ? latestPendingCardId(projectId, 'action')
+              : undefined)
 
         if (command === 'decline-plan' && !canTransition(machine, command)) {
           append(scripts.buildDeclineLimitMessages(projectId))
@@ -179,7 +184,7 @@ export const useWorkflowStore = create<WorkflowState>()(
           }
           case 'start-build': {
             setStage(projectId, next.stage)
-            if (cardId) set((state) => ({ cardStates: { ...state.cardStates, [cardId]: 'submitted' } }))
+            if (effectiveCardId) set((state) => ({ cardStates: { ...state.cardStates, [effectiveCardId]: 'submitted' } }))
             const prev = extrasOf(projectId).buildSignal
             patchExtras(projectId, { buildSignal: { nonce: (prev?.nonce ?? 0) + 1, mode: 'build' } })
             const messages = scripts.buildStartBuildMessages(projectId, bump(projectId, 'start-build'))
@@ -197,9 +202,9 @@ export const useWorkflowStore = create<WorkflowState>()(
             break
           }
           case 'replay-build': {
+            // 纯 UI 回放：只发动画信号，不追加消息、不消耗话术轮转（规格 4.6）
             const prev = extrasOf(projectId).buildSignal
             patchExtras(projectId, { buildSignal: { nonce: (prev?.nonce ?? 0) + 1, mode: 'replay' } })
-            append(scripts.buildReplayMessages(projectId))
             break
           }
           case 'build-finished': {
@@ -230,11 +235,7 @@ export const useWorkflowStore = create<WorkflowState>()(
             (!matched || matched.name === 'describe-requirements')
           ) {
             if (extras.questionCardPending) {
-              const nudge = scripts.createMessage({
-                projectId,
-                senderId: 'agent-mike',
-                content: '先回答上面的问题卡，我们就可以出方案了。',
-              })
+              const nudge = scripts.buildMikeNudgeMessage(projectId, bump(projectId, 'mike-nudge'))
               append([userMessage, nudge])
             } else {
               const messages = scripts.buildQuestionCardMessages(projectId, bump(projectId, 'question-intro'))

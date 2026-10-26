@@ -303,11 +303,14 @@ export function buildTestReportMessages(projectId: string, count: number): Messa
   ]
 }
 
-/** 重播仅 UI 回放：只回一句确认，不推进状态、不消耗轮转 */
-export function buildReplayMessages(projectId: string): Message[] {
-  return [
-    createMessage({ projectId, senderId: 'agent-alex', content: '好的，为你重播一遍构建过程。' }),
-  ]
+const MIKE_NUDGES = [
+  '先回答上面的问题卡，我们就可以出方案了。',
+  '问题卡还差你的回答，答完我马上整理方案。',
+]
+
+/** Mike 提醒先答问题卡（2 套轮转） */
+export function buildMikeNudgeMessage(projectId: string, count: number): Message {
+  return createMessage({ projectId, senderId: 'agent-mike', content: pickVariant(MIKE_NUDGES, count) })
 }
 
 /** 拒绝次数已达上限时，对「拒绝」指令的确定性回应（按钮此时已禁用） */
