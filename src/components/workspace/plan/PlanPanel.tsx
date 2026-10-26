@@ -4,10 +4,11 @@ import { Pencil, SendHorizonal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CommentList, EditHistory } from '@/components/workspace/plan/records'
-import { MarkdownView } from '@/components/workspace/plan/MarkdownView'
+import { KindToggle, SectionedPlan } from '@/components/workspace/plan/SectionedPlan'
 import { usePlansStore } from '@/store/plans'
 import { useProjectsStore } from '@/store/projects'
 import { useUsersStore } from '@/store/users'
+import type { PlanCommentKind } from '@/store/types'
 
 interface PlanPanelProps {
   projectId: string
@@ -25,6 +26,7 @@ export function PlanPanel({ projectId }: PlanPanelProps) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState('')
   const [commentInput, setCommentInput] = useState('')
+  const [commentKind, setCommentKind] = useState<PlanCommentKind>('评论')
 
   useEffect(() => {
     ensurePlan(projectId, project?.name)
@@ -46,7 +48,7 @@ export function PlanPanel({ projectId }: PlanPanelProps) {
   const handleComment = () => {
     const content = commentInput.trim()
     if (!content || !currentUser) return
-    addComment({ projectId, authorId: currentUser.id, content })
+    addComment({ projectId, authorId: currentUser.id, content, kind: commentKind })
     setCommentInput('')
   }
 
@@ -78,7 +80,15 @@ export function PlanPanel({ projectId }: PlanPanelProps) {
             className="min-h-[320px] w-full resize-y rounded-md border border-input bg-background p-3 font-mono text-sm leading-6 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           />
         ) : (
-          <MarkdownView content={plan.content} />
+          <SectionedPlan
+            content={plan.content}
+            comments={plan.comments}
+            users={users}
+            currentUser={currentUser}
+            onAnnotate={({ section, kind, content }) =>
+              currentUser && addComment({ projectId, authorId: currentUser.id, content, kind, section })
+            }
+          />
         )}
       </section>
 
@@ -97,10 +107,11 @@ export function PlanPanel({ projectId }: PlanPanelProps) {
             handleComment()
           }}
         >
+          <KindToggle value={commentKind} onChange={setCommentKind} />
           <Input
             value={commentInput}
             onChange={(e) => setCommentInput(e.target.value)}
-            placeholder="写下你的评论…"
+            placeholder="写下你对整体方案的评论…"
             className="flex-1"
             disabled={!currentUser}
           />

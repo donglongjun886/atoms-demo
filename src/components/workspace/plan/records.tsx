@@ -41,6 +41,29 @@ export function EditHistory({ edits, users }: { edits: PlanEdit[]; users: User[]
   )
 }
 
+const KIND_STYLE: Record<string, string> = {
+  评论: 'bg-slate-100 text-slate-600',
+  建议: 'bg-sky-100 text-sky-700',
+  修改: 'bg-violet-100 text-violet-700',
+}
+
+export function CommentBadges({ comment }: { comment: PlanComment }) {
+  return (
+    <span className="flex items-center gap-1">
+      {comment.kind && comment.kind !== '评论' && (
+        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${KIND_STYLE[comment.kind] ?? KIND_STYLE.评论}`}>
+          {comment.kind}
+        </span>
+      )}
+      {comment.section && (
+        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+          § {comment.section}
+        </span>
+      )}
+    </span>
+  )
+}
+
 export function CommentList({ comments, users }: { comments: PlanComment[]; users: User[] }) {
   if (comments.length === 0) {
     return <p className="text-sm text-muted-foreground">还没有评论，来抢沙发</p>
@@ -53,10 +76,11 @@ export function CommentList({ comments, users }: { comments: PlanComment[]; user
           <li key={comment.id} className="flex gap-2.5">
             <UserAvatar name={author.name} color={author.color} className="mt-0.5 h-7 w-7 shrink-0 text-xs" />
             <div className="min-w-0">
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium" style={{ color: author.color }}>
                   {author.name}
                 </span>
+                <CommentBadges comment={comment} />
                 <span className="text-xs text-muted-foreground">{formatTime(comment.createdAt)}</span>
               </div>
               <p className="mt-0.5 whitespace-pre-wrap break-words text-sm">{comment.content}</p>

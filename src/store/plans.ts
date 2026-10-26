@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-import type { PlanComment, PlanEdit, ProjectPlan } from '@/store/types'
+import type { PlanComment, PlanCommentKind, PlanEdit, ProjectPlan } from '@/store/types'
 
 export function createPlanTemplate(projectName: string): string {
   return `# ${projectName} 方案
@@ -37,7 +37,13 @@ interface PlansState {
   plans: Record<string, ProjectPlan>
   ensurePlan: (projectId: string, projectName?: string) => void
   savePlan: (input: { projectId: string; content: string; authorId: string; action?: string }) => void
-  addComment: (input: { projectId: string; authorId: string; content: string }) => void
+  addComment: (input: {
+    projectId: string
+    authorId: string
+    content: string
+    kind?: PlanCommentKind
+    section?: string | null
+  }) => void
 }
 
 export const usePlansStore = create<PlansState>()(
@@ -60,7 +66,7 @@ export const usePlansStore = create<PlansState>()(
           }
           return { plans: { ...state.plans, [projectId]: { ...plan, content, edits: [...plan.edits, edit] } } }
         }),
-      addComment: ({ projectId, authorId, content }) =>
+      addComment: ({ projectId, authorId, content, kind, section }) =>
         set((state) => {
           const plan = state.plans[projectId] ?? emptyPlan()
           const comment: PlanComment = {
@@ -68,6 +74,8 @@ export const usePlansStore = create<PlansState>()(
             projectId,
             authorId,
             content,
+            kind: kind ?? '评论',
+            section: section ?? null,
             createdAt: Date.now(),
           }
           return { plans: { ...state.plans, [projectId]: { ...plan, comments: [...plan.comments, comment] } } }

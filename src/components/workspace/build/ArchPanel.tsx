@@ -93,7 +93,12 @@ export function ArchPanel({ stage, timeline }: ArchPanelProps) {
                   <span className={cn('text-sm font-semibold', status === 'waiting' && 'text-muted-foreground')}>
                     {mod.name}
                   </span>
-                  <StatusBadge status={status} />
+                  <span className="flex items-center gap-2">
+                    {status === 'done' && (
+                      <span className="text-[10px] font-medium text-emerald-700">覆盖率 {mod.coverage}%</span>
+                    )}
+                    <StatusBadge status={status} />
+                  </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{mod.description}</p>
                 {revealedFiles.length > 0 && (

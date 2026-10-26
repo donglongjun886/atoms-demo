@@ -63,11 +63,17 @@ export interface PlanEdit {
   createdAt: number
 }
 
+export type PlanCommentKind = '评论' | '建议' | '修改'
+
 export interface PlanComment {
   id: string
   projectId: string
   authorId: string
   content: string
+  /** 批注类型；早期数据无此字段时按「评论」展示 */
+  kind?: PlanCommentKind
+  /** 所属章节（方案的 h2 标题）；null/缺省表示整体评论 */
+  section?: string | null
   createdAt: number
 }
 
