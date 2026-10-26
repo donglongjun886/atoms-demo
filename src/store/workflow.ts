@@ -9,6 +9,7 @@ import {
   type WorkflowMachineState,
 } from '@/engine/workflow'
 import { useMessagesStore } from '@/store/messages'
+import { usePlansStore } from '@/store/plans'
 import { useProjectsStore } from '@/store/projects'
 import type { Message } from '@/store/types'
 
@@ -115,6 +116,17 @@ export const useWorkflowStore = create<WorkflowState>()(
         return [...cards].reverse().find((m) => (get().cardStates[m.id] ?? 'pending') === 'pending')?.id
       }
 
+      /** Emma 产出计划卡时同步写入方案共编 Tab，修改记录按 Emma 留痕 */
+      const syncPlanDocument = (projectId: string, declineCount: number) => {
+        const project = useProjectsStore.getState().projects.find((p) => p.id === projectId)
+        usePlansStore.getState().savePlan({
+          projectId,
+          content: scripts.buildPlanDocument(project?.name ?? '未命名项目', declineCount),
+          authorId: 'agent-emma',
+          action: declineCount === 0 ? '产出了方案初稿' : `产出了方案第 ${declineCount + 1} 版`,
+        })
+      }
+
       const runCommand = (projectId: string, command: WorkflowCommandName, cardId?: string) => {
         const machine = machineOf(projectId)
         if (!machine) return
@@ -139,6 +151,7 @@ export const useWorkflowStore = create<WorkflowState>()(
             const planMessages = scripts.buildPlanMessages(projectId, next.declineCount, bump(projectId, 'emma-plan'))
             append(planMessages)
             markCards(planMessages, 'pending')
+            syncPlanDocument(projectId, next.declineCount)
             break
           }
           case 'approve-plan': {
@@ -159,6 +172,7 @@ export const useWorkflowStore = create<WorkflowState>()(
             const planMessages = scripts.buildPlanMessages(projectId, next.declineCount, bump(projectId, 'emma-plan'))
             append(planMessages)
             markCards(planMessages, 'pending')
+            syncPlanDocument(projectId, next.declineCount)
             const settled = transition({ stage: next.stage, declineCount: next.declineCount }, 'describe-requirements')
             if (settled) setStage(projectId, settled.stage)
             break

@@ -132,6 +132,33 @@ const PLAN_SUMMARY_REVISIONS = [
 
 const EMMA_PLAN_ACTIVITY = ['需求归纳', '功能拆解', '方案撰写']
 
+/** Emma 方案完整文档（写入方案共编 Tab；declineCount=0 为首版） */
+export function buildPlanDocument(projectName: string, declineCount: number): string {
+  const version = declineCount + 1
+  const summary = declineCount === 0 ? PLAN_SUMMARY_V1 : PLAN_SUMMARY_REVISIONS[Math.min(declineCount - 1, 1)]
+  return [
+    `# ${projectName}方案（第 ${version} 版）`,
+    '',
+    '## 目标',
+    '',
+    '交付一个可交互的任务管理应用，支持任务的完整生命周期管理。',
+    '',
+    '## 核心功能',
+    '',
+    summary,
+    '',
+    '## 页面与交互',
+    '',
+    '- 单页应用：顶部输入框添加任务，列表展示，筛选栏切换视图',
+    '- 勾选切换完成状态，悬停出现删除入口',
+    '',
+    '## 技术要点',
+    '',
+    '- React 18 + TypeScript + Tailwind CSS',
+    '- Zustand 管理任务状态，localStorage 持久化',
+  ].join('\n')
+}
+
 /** Emma 产出计划卡。declineCount=0 为首版，1/2 为拒绝后的重出版（第 2 次重出的话术引导批准） */
 export function buildPlanMessages(projectId: string, declineCount: number, count: number): Message[] {
   const version = declineCount + 1
