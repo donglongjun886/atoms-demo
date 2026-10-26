@@ -268,9 +268,10 @@ export function buildViewProgressMessages(projectId: string, count: number): Mes
 }
 
 export const ALEX_COVERAGE_LINES = [
-  '数据层：96%',
-  '状态层：92%',
-  'UI 层：88%',
+  '数据层（localStorage 持久化）：96%',
+  '状态层（任务 Store）：92%',
+  'UI 层（任务输入 / 列表 / 筛选栏）：88%',
+  '样式层（Tailwind 主题与布局）：95%',
   '整体覆盖率：92%',
 ]
 
