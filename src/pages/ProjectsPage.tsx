@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { InvitationNoticeCards } from '@/components/InvitationNoticeCards'
 import { UserAvatar } from '@/components/UserAvatar'
 import type { Project } from '@/store/types'
 import { useProjectsStore } from '@/store/projects'
@@ -158,6 +159,8 @@ export function ProjectsPage() {
             </DialogContent>
           </Dialog>
         </div>
+
+        <InvitationNoticeCards />
 
         <ProjectSection title="我的项目" projects={myProjects} />
         <ProjectSection title="参与的项目" projects={joinedProjects} />

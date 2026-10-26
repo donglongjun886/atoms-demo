@@ -47,3 +47,15 @@ export interface ProjectPlan {
   edits: PlanEdit[]
   comments: PlanComment[]
 }
+
+export type InvitationStatus = '待处理' | '已接受' | '已拒绝'
+
+export interface Invitation {
+  id: string
+  projectId: string
+  inviterId: string
+  inviteeId: string
+  status: InvitationStatus
+  createdAt: number
+  respondedAt: number | null
+}
