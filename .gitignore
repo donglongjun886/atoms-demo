@@ -3,3 +3,8 @@ dist
 .DS_Store
 *.local
 *.tsbuildinfo
+
+# 笔试原始文档与编排草稿（不入公开仓库）
+笔试文档.md
+【请创建副本后使用】*.md
+.scratch/
