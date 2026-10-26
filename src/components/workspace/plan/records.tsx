@@ -1,6 +1,6 @@
 import { UserAvatar } from '@/components/UserAvatar'
 import { AGENT_TEAM } from '@/engine/agents'
-import type { PlanEdit, PlanComment, User } from '@/store/types'
+import type { PlanEdit, PlanComment, PlanCommentKind, User } from '@/store/types'
 
 export function resolveAuthor(authorId: string, users: User[]) {
   const agent = AGENT_TEAM.find((a) => a.id === authorId)
@@ -41,7 +41,7 @@ export function EditHistory({ edits, users }: { edits: PlanEdit[]; users: User[]
   )
 }
 
-const KIND_STYLE: Record<string, string> = {
+const KIND_STYLE: Record<PlanCommentKind, string> = {
   评论: 'bg-slate-100 text-slate-600',
   建议: 'bg-sky-100 text-sky-700',
   修改: 'bg-violet-100 text-violet-700',
@@ -50,11 +50,9 @@ const KIND_STYLE: Record<string, string> = {
 export function CommentBadges({ comment }: { comment: PlanComment }) {
   return (
     <span className="flex items-center gap-1">
-      {comment.kind && comment.kind !== '评论' && (
-        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${KIND_STYLE[comment.kind] ?? KIND_STYLE.评论}`}>
-          {comment.kind}
-        </span>
-      )}
+      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${KIND_STYLE[comment.kind ?? '评论']}`}>
+        {comment.kind ?? '评论'}
+      </span>
       {comment.section && (
         <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
           § {comment.section}

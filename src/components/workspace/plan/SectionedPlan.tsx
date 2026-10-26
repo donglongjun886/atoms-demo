@@ -41,12 +41,12 @@ interface SectionedPlanProps {
 
 export function SectionedPlan({ content, comments, users, currentUser, onAnnotate }: SectionedPlanProps) {
   const sections = splitPlanSections(content)
-  const [openSection, setOpenSection] = useState<string | null>(null)
+  const [openSection, setOpenSection] = useState<number | null>(null)
   const [draft, setDraft] = useState('')
   const [kind, setKind] = useState<PlanCommentKind>('评论')
 
-  const toggle = (title: string) => {
-    setOpenSection((prev) => (prev === title ? null : title))
+  const toggle = (index: number) => {
+    setOpenSection((prev) => (prev === index ? null : index))
     setDraft('')
     setKind('评论')
   }
@@ -64,13 +64,14 @@ export function SectionedPlan({ content, comments, users, currentUser, onAnnotat
         if (section.title === null) {
           return <MarkdownView key={`preamble-${index}`} content={section.markdown} />
         }
-        const sectionComments = comments.filter((c) => c.section === section.title)
-        const open = openSection === section.title
+        const title = section.title
+        const sectionComments = comments.filter((c) => c.section === title)
+        const open = openSection === index
         return (
-          <div key={section.title} className="group/section relative">
+          <div key={`${index}-${title}`} className="group/section relative">
             <button
               type="button"
-              onClick={() => toggle(section.title!)}
+              onClick={() => toggle(index)}
               className={cn(
                 'absolute right-0 top-4 flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-[10px] text-muted-foreground shadow-sm transition-opacity hover:text-foreground',
                 open || sectionComments.length > 0 ? 'opacity-100' : 'opacity-0 group-hover/section:opacity-100',
@@ -91,14 +92,14 @@ export function SectionedPlan({ content, comments, users, currentUser, onAnnotat
                   className="flex items-center gap-2"
                   onSubmit={(e) => {
                     e.preventDefault()
-                    submit(section.title!)
+                    submit(title)
                   }}
                 >
                   <KindToggle value={kind} onChange={setKind} />
                   <Input
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
-                    placeholder={`对「${section.title}」的批注…`}
+                    placeholder={`对「${title}」的批注…`}
                     className="h-8 flex-1 text-xs"
                     disabled={!currentUser}
                   />

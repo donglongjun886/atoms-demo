@@ -267,12 +267,16 @@ export function buildViewProgressMessages(projectId: string, count: number): Mes
   ]
 }
 
+/** 各模块测试覆盖率的唯一数据源；UI 层（build/modules.ts）与 Alex 报告文案都从这里取数 */
+export const MODULE_COVERAGE = { data: 96, state: 92, ui: 88, style: 95 } as const
+export const OVERALL_COVERAGE = 92
+
 export const ALEX_COVERAGE_LINES = [
-  '数据层（localStorage 持久化）：96%',
-  '状态层（任务 Store）：92%',
-  'UI 层（任务输入 / 列表 / 筛选栏）：88%',
-  '样式层（Tailwind 主题与布局）：95%',
-  '整体覆盖率：92%',
+  `数据层（localStorage 持久化）：${MODULE_COVERAGE.data}%`,
+  `状态层（任务 Store）：${MODULE_COVERAGE.state}%`,
+  `UI 层（任务输入 / 列表 / 筛选栏）：${MODULE_COVERAGE.ui}%`,
+  `样式层（Tailwind 主题与布局）：${MODULE_COVERAGE.style}%`,
+  `整体覆盖率：${OVERALL_COVERAGE}%`,
 ]
 
 /** 构建动画完成后由编排层（finishBuild）调用：Alex 报测试覆盖率，进入测试阶段 */
@@ -293,8 +297,8 @@ export function buildBuildFinishedMessages(projectId: string): Message[] {
 }
 
 const ALEX_TEST_REPORTS = [
-  '测试报告：全部用例通过，整体覆盖率 92%。应用已就绪，请到右侧「预览」标签体验。',
-  '测试全部通过，覆盖率 92% 达标。应用已经可以用了，右侧「预览」标签见。',
+  `测试报告：全部用例通过，整体覆盖率 ${OVERALL_COVERAGE}%。应用已就绪，请到右侧「预览」标签体验。`,
+  `测试全部通过，覆盖率 ${OVERALL_COVERAGE}% 达标。应用已经可以用了，右侧「预览」标签见。`,
 ]
 
 export function buildTestReportMessages(projectId: string, count: number): Message[] {
