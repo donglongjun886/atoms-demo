@@ -25,3 +25,25 @@ export interface Message {
   content: string
   createdAt: number
 }
+
+export interface PlanEdit {
+  id: string
+  projectId: string
+  authorId: string
+  action: string
+  createdAt: number
+}
+
+export interface PlanComment {
+  id: string
+  projectId: string
+  authorId: string
+  content: string
+  createdAt: number
+}
+
+export interface ProjectPlan {
+  content: string
+  edits: PlanEdit[]
+  comments: PlanComment[]
+}

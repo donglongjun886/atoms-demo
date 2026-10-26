@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PlanPanel } from '@/components/workspace/plan/PlanPanel'
 
 interface AppViewerProps {
   projectId: string
 }
 
 export function AppViewer({ projectId }: AppViewerProps) {
-  void projectId
   return (
     <Tabs defaultValue="plan" className="flex h-full flex-col">
       <div className="border-b px-4 pt-3">
@@ -18,7 +18,7 @@ export function AppViewer({ projectId }: AppViewerProps) {
       </div>
       <div className="flex-1 overflow-y-auto p-6">
         <TabsContent value="plan" className="mt-0">
-          <Placeholder text="方案将在方案确认阶段由 Emma 产出，成员可在此共同编辑" />
+          <PlanPanel projectId={projectId} />
         </TabsContent>
         <TabsContent value="arch" className="mt-0">
           <Placeholder text="架构图将在架构设计阶段由 Bob 产出，构建时模块将逐个变色" />
