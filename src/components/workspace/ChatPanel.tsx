@@ -4,12 +4,13 @@ import { SendHorizonal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { UserAvatar } from '@/components/UserAvatar'
+import { ActionCard, ActivityCard, PlanCard, QuestionCard } from '@/components/workspace/cards'
 import { AGENT_TEAM } from '@/engine/agents'
-import { createMessage, dispatchUserMessage } from '@/engine/scripts'
 import { cn } from '@/lib/utils'
 import { useMessagesStore } from '@/store/messages'
 import type { Message, Project, User } from '@/store/types'
 import { useUsersStore } from '@/store/users'
+import { useWorkflowStore } from '@/store/workflow'
 
 function resolveSender(senderId: string, users: User[]) {
   const agent = AGENT_TEAM.find((a) => a.id === senderId)
@@ -18,7 +19,7 @@ function resolveSender(senderId: string, users: User[]) {
   return { name: user?.name ?? '未知用户', color: user?.color ?? '#64748B', role: null }
 }
 
-function MessageItem({ message, users }: { message: Message; users: User[] }) {
+function MessageItem({ message, users, project }: { message: Message; users: User[]; project: Project }) {
   const sender = resolveSender(message.senderId, users)
   const time = new Date(message.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 
@@ -41,6 +42,16 @@ function MessageItem({ message, users }: { message: Message; users: User[] }) {
           <span className="text-xs text-muted-foreground">{time}</span>
         </div>
         <p className="mt-0.5 whitespace-pre-wrap break-words text-sm">{message.content}</p>
+        {message.card?.type === 'question' && (
+          <QuestionCard message={{ ...message, card: message.card }} projectId={project.id} />
+        )}
+        {message.card?.type === 'plan' && (
+          <PlanCard message={{ ...message, card: message.card }} projectId={project.id} stage={project.stage} />
+        )}
+        {message.card?.type === 'activity' && <ActivityCard message={{ ...message, card: message.card }} />}
+        {message.card?.type === 'action' && (
+          <ActionCard message={{ ...message, card: message.card }} projectId={project.id} stage={project.stage} />
+        )}
       </div>
     </div>
   )
@@ -53,8 +64,8 @@ interface ChatPanelProps {
 
 export function ChatPanel({ project, currentUser }: ChatPanelProps) {
   const allMessages = useMessagesStore((s) => s.messages)
-  const appendMessages = useMessagesStore((s) => s.appendMessages)
   const users = useUsersStore((s) => s.users)
+  const sendUserMessage = useWorkflowStore((s) => s.sendUserMessage)
 
   const messages = useMemo(() => allMessages.filter((m) => m.projectId === project.id), [allMessages, project.id])
   const [visibleCount, setVisibleCount] = useState(
@@ -78,9 +89,7 @@ export function ChatPanel({ project, currentUser }: ChatPanelProps) {
   const handleSend = () => {
     const content = input.trim()
     if (!content) return
-    const userMessage = createMessage({ projectId: project.id, senderId: currentUser.id, content })
-    const replies = dispatchUserMessage({ projectId: project.id, content, stage: project.stage })
-    appendMessages([userMessage, ...replies])
+    sendUserMessage({ projectId: project.id, userId: currentUser.id, content })
     setInput('')
   }
 
@@ -92,7 +101,7 @@ export function ChatPanel({ project, currentUser }: ChatPanelProps) {
             还没有消息，向 Agent 团队描述你想做的应用吧
           </p>
         ) : (
-          visibleMessages.map((message) => <MessageItem key={message.id} message={message} users={users} />)
+          visibleMessages.map((message) => <MessageItem key={message.id} message={message} users={users} project={project} />)
         )}
       </div>
       <div className="border-t p-3">
